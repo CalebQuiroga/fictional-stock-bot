@@ -118,7 +118,6 @@ client.on("ready", () => {
   startMarketLoop(); // start auto-report loop
 });
 
-// Manual commands
 client.on("messageCreate", (msg) => {
   if (msg.content === "!stocks") {
     let lines = Object.entries(stocks).map(
@@ -132,6 +131,52 @@ client.on("messageCreate", (msg) => {
     } else {
       msg.channel.send(`Stock symbol \`${symbol}\` not found.`);
     }
+
+  } else if (msg.content.startsWith("!addevent ")) {
+    if (msg.author.id !== adminID) return;
+
+    const args = msg.content.split(" ");
+    if (args.length < 4) {
+      return msg.reply("Usage: `!addevent SYMBOL +/-0.10 \"Event message here\"`");
+    }
+
+    const symbol = args[1].toUpperCase();
+    const change = parseFloat(args[2]);
+    const messageMatch = msg.content.match(/"([^"]+)"/);
+    const eventMsg = messageMatch ? messageMatch[1] : null;
+
+    if (!stocks[symbol]) {
+      return msg.reply(`Stock symbol \`${symbol}\` not found.`);
+    }
+
+    if (isNaN(change) || !eventMsg) {
+      return msg.reply("Invalid format. Wrap the event message in quotes.");
+    }
+
+    customEvents.push({ symbol, change, message: eventMsg });
+    msg.reply(`✅ Event added! You now have ${customEvents.length} custom event(s).`);
+
+  } else if (msg.content.startsWith("!doevent ")) {
+    if (msg.author.id !== adminID) return;
+
+    const index = parseInt(msg.content.split(" ")[1]);
+    const event = customEvents[index];
+
+    if (!event) {
+      return msg.reply(`⚠️ No event found at index ${index}`);
+    }
+
+    const symbol = event.symbol;
+    const change = event.change;
+    const msgText = event.message;
+
+    stocks[symbol] = Math.max(1, stocks[symbol] + stocks[symbol] * change);
+
+    const report = Object.entries(stocks)
+      .map(([sym, price]) => `${sym}: $${price.toFixed(2)}`)
+      .join('\n');
+
+    msg.channel.send(`🧨 **Manual Event Triggered**: ${msgText}\n\`\`\`${report}\`\`\``);
   }
 });
 
