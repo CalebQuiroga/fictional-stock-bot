@@ -19,6 +19,7 @@ let stocks = {
 const adminID = "907341400830537838"; // your Discord user ID
 
 let customEvents = []; // user-defined events added in chat
+
 // Helper: Wait N milliseconds
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -55,7 +56,7 @@ async function startMarketLoop() {
 
     const channel = client.channels.cache.get('1219680183985115136');
     if (channel) {
-      await channel.send(`📅 **Market Update for ${day}**\n\`\`\`${report}\`\`\``);
+      await channel.send(`\uD83D\uDCC5 **Market Update for ${day}**\n\\`\\`\\`${report}\\`\\`\\``);
     } else {
       console.log("⚠️ Could not find channel. Check the channel ID.");
     }
@@ -63,55 +64,7 @@ async function startMarketLoop() {
     await wait(minutes * 60 * 1000); // wait until next tick
   }
 }
-// Add a new event
-else if (msg.content.startsWith("!addevent ")) {
-  if (msg.author.id !== adminID) return;
 
-  const args = msg.content.split(" ");
-  if (args.length < 4) {
-    return msg.reply("Usage: `!addevent SYMBOL +/-0.10 \"Event message here\"`");
-  }
-
-  const symbol = args[1].toUpperCase();
-  const change = parseFloat(args[2]);
-  const messageMatch = msg.content.match(/"([^"]+)"/);
-  const eventMsg = messageMatch ? messageMatch[1] : null;
-
-  if (!stocks[symbol]) {
-    return msg.reply(`Stock symbol \`${symbol}\` not found.`);
-  }
-
-  if (isNaN(change) || !eventMsg) {
-    return msg.reply("Invalid format. Wrap the event message in quotes.");
-  }
-
-  customEvents.push({ symbol, change, message: eventMsg });
-  msg.reply(`✅ Event added! You now have ${customEvents.length} custom event(s).`);
-}
-
-// Trigger an event by index
-else if (msg.content.startsWith("!doevent ")) {
-  if (msg.author.id !== adminID) return;
-
-  const index = parseInt(msg.content.split(" ")[1]);
-  const event = customEvents[index];
-
-  if (!event) {
-    return msg.reply(`⚠️ No event found at index ${index}`);
-  }
-
-  const symbol = event.symbol;
-  const change = event.change;
-  const msgText = event.message;
-
-  stocks[symbol] = Math.max(1, stocks[symbol] + stocks[symbol] * change);
-
-  const report = Object.entries(stocks)
-    .map(([sym, price]) => `${sym}: $${price.toFixed(2)}`)
-    .join('\n');
-
-  msg.channel.send(`🧨 **Manual Event Triggered**: ${msgText}\n\`\`\`${report}\`\`\``);
-}
 // Start bot
 client.on("ready", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
@@ -123,7 +76,7 @@ client.on("messageCreate", (msg) => {
     let lines = Object.entries(stocks).map(
       ([symbol, price]) => `${symbol}: $${price.toFixed(2)}`
     );
-    msg.channel.send("📈 **Current Stock Prices**:\n" + lines.join("\n"));
+    msg.channel.send("\uD83D\uDCC8 **Current Stock Prices**:\n" + lines.join("\n"));
   } else if (msg.content.startsWith("!price ")) {
     let symbol = msg.content.split(" ")[1].toUpperCase();
     if (stocks[symbol]) {
@@ -131,7 +84,6 @@ client.on("messageCreate", (msg) => {
     } else {
       msg.channel.send(`Stock symbol \`${symbol}\` not found.`);
     }
-
   } else if (msg.content.startsWith("!addevent ")) {
     if (msg.author.id !== adminID) return;
 
@@ -142,7 +94,7 @@ client.on("messageCreate", (msg) => {
 
     const symbol = args[1].toUpperCase();
     const change = parseFloat(args[2]);
-    const messageMatch = msg.content.match(/"([^"]+)"/);
+    const messageMatch = msg.content.match(/\"([^\"]+)\"/);
     const eventMsg = messageMatch ? messageMatch[1] : null;
 
     if (!stocks[symbol]) {
@@ -155,7 +107,6 @@ client.on("messageCreate", (msg) => {
 
     customEvents.push({ symbol, change, message: eventMsg });
     msg.reply(`✅ Event added! You now have ${customEvents.length} custom event(s).`);
-
   } else if (msg.content.startsWith("!doevent ")) {
     if (msg.author.id !== adminID) return;
 
@@ -176,7 +127,7 @@ client.on("messageCreate", (msg) => {
       .map(([sym, price]) => `${sym}: $${price.toFixed(2)}`)
       .join('\n');
 
-    msg.channel.send(`🧨 **Manual Event Triggered**: ${msgText}\n\`\`\`${report}\`\`\``);
+    msg.channel.send(`\uD83E\uDEA8 **Manual Event Triggered**: ${msgText}\n\\`\\`\\`${report}\\`\\`\\``);
   }
 });
 
