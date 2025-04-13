@@ -11,9 +11,9 @@ const app = express();
 app.get("/", (_, res) => res.send("Bot is running."));
 app.listen(process.env.PORT || 8080, () => console.log("🌐 Web server active"));
 
-const adminID = "YOUR_DISCORD_ID"; // Replace with your Discord ID
+const adminID = "907341400830537838"; // Replace with your Discord ID
 let customEvents = [];
-const channelID = "YOUR_CHANNEL_ID"; // Replace with your channel ID
+const channelID = "1219680183985115136"; // Replace with your channel ID
 
 let stocks = {
   MICX: 268.45,
