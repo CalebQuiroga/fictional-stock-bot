@@ -26,6 +26,18 @@ let stocks = {
   MDXX: 136.75,
 };
 
+const stockHistory = {};
+for (const key in stocks) {
+  stockHistory[key] = [stocks[key]];
+}
+
+function calculateTrend(symbol) {
+  const history = stockHistory[symbol];
+  if (!history || history.length < 2) return "➡️";
+  const diff = history[history.length - 1] - history[history.length - 2];
+  return diff > 0 ? "📈" : diff < 0 ? "📉" : "➡️";
+}
+
 const indexes = {
   CQA: ["MICX", "APPL", "APP", "SNRG", "CITI", "MGMT", "AUTX", "MDXX"],
   TechPower: ["MICX", "APPL"],
@@ -48,6 +60,10 @@ function updateStocks() {
   for (let stock in stocks) {
     let change = (Math.random() - 0.5) * 10;
     stocks[stock] = Math.max(1, stocks[stock] + change);
+    stockHistory[stock].push(stocks[stock]);
+    if (stockHistory[stock].length > 100) {
+      stockHistory[stock].shift();
+    }
   }
 }
 
@@ -64,10 +80,8 @@ client.on("ready", async () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
   const channel = await client.channels.fetch(channelID);
 
-  // Frequent stock updates every 20 seconds
   setInterval(() => updateStocks(), 20000);
 
-  // Scheduled daily reports
   async function dailyReportLoop() {
     while (true) {
       const now = new Date();
@@ -76,14 +90,14 @@ client.on("ready", async () => {
       const minutes = entry ? entry.duration : 25;
 
       const report = Object.entries(stocks)
-        .map(([s, p]) => `${s}: $${p.toFixed(2)}`)
+        .map(([s, p]) => `${s}: $${p.toFixed(2)} ${calculateTrend(s)}`)
         .join("\n");
       const indexValues = calculateIndexes();
       const indexReport = Object.entries(indexValues)
         .map(([i, v]) => `${i}: ${v}`)
         .join("\n");
 
-      await channel.send(`📅 **Daily Market Report for ${day}**\n\`\`\`${report}\n\nIndexes:\n${indexReport}\`\`\``);
+      await channel.send(`📅 **Daily Market Report for ${day}**\n\\`\\`\\`${report}\n\nIndexes:\n${indexReport}\\`\\`\\``);
       await wait(minutes * 60 * 1000);
     }
   }
@@ -93,7 +107,7 @@ client.on("ready", async () => {
 
 client.on("messageCreate", async (msg) => {
   if (msg.content === "!stocks") {
-    const lines = Object.entries(stocks).map(([s, p]) => `${s}: $${p.toFixed(2)}`);
+    const lines = Object.entries(stocks).map(([s, p]) => `${s}: $${p.toFixed(2)} ${calculateTrend(s)}`);
     msg.channel.send("📈 **Current Stock Prices**:\n" + lines.join("\n"));
   } else if (msg.content === "!index") {
     const values = calculateIndexes();
@@ -102,9 +116,9 @@ client.on("messageCreate", async (msg) => {
   } else if (msg.content.startsWith("!price ")) {
     const symbol = msg.content.split(" ")[1].toUpperCase();
     if (stocks[symbol]) {
-      msg.channel.send(`${symbol} is currently at $${stocks[symbol].toFixed(2)}`);
+      msg.channel.send(`${symbol} is currently at $${stocks[symbol].toFixed(2)} ${calculateTrend(symbol)}`);
     } else {
-      msg.channel.send(`Stock symbol \`${symbol}\` not found.`);
+      msg.channel.send(`Stock symbol \\`${symbol}\\` not found.`);
     }
   } else if (msg.content.startsWith("!addevent ")) {
     if (msg.author.id !== adminID) return;
@@ -116,7 +130,7 @@ client.on("messageCreate", async (msg) => {
     const match = msg.content.match(/"([^"]+)"/);
     const eventMsg = match ? match[1] : null;
 
-    if (!stocks[symbol]) return msg.reply(`Stock symbol \`${symbol}\` not found.`);
+    if (!stocks[symbol]) return msg.reply(`Stock symbol \\`${symbol}\\` not found.`);
     if (isNaN(change) || !eventMsg) return msg.reply("Invalid format. Wrap the event message in quotes.");
 
     customEvents.push({ symbol, change, message: eventMsg });
@@ -135,11 +149,15 @@ client.on("messageCreate", async (msg) => {
     const change = event.change;
     const msgText = event.message;
     stocks[symbol] = Math.max(1, stocks[symbol] + stocks[symbol] * change);
+    stockHistory[symbol].push(stocks[symbol]);
+    if (stockHistory[symbol].length > 100) {
+      stockHistory[symbol].shift();
+    }
 
     const report = Object.entries(stocks)
-      .map(([s, p]) => `${s}: $${p.toFixed(2)}`)
+      .map(([s, p]) => `${s}: $${p.toFixed(2)} ${calculateTrend(s)}`)
       .join("\n");
-    msg.channel.send(`🧨 **Manual Event Triggered**: ${msgText}\n\`\`\`${report}\`\`\``);
+    msg.channel.send(`🧨 **Manual Event Triggered**: ${msgText}\n\\`\\`\\`${report}\\`\\`\\``);
   }
 });
 
