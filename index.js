@@ -16,7 +16,9 @@ let stocks = {
   AMZOON: 200.0,
   TAYLR: 130.0
 };
+const adminID = "907341400830537838"; // your Discord user ID
 
+let customEvents = []; // user-defined events added in chat
 // Helper: Wait N milliseconds
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -61,7 +63,55 @@ async function startMarketLoop() {
     await wait(minutes * 60 * 1000); // wait until next tick
   }
 }
+// Add a new event
+else if (msg.content.startsWith("!addevent ")) {
+  if (msg.author.id !== adminID) return;
 
+  const args = msg.content.split(" ");
+  if (args.length < 4) {
+    return msg.reply("Usage: `!addevent SYMBOL +/-0.10 \"Event message here\"`");
+  }
+
+  const symbol = args[1].toUpperCase();
+  const change = parseFloat(args[2]);
+  const messageMatch = msg.content.match(/"([^"]+)"/);
+  const eventMsg = messageMatch ? messageMatch[1] : null;
+
+  if (!stocks[symbol]) {
+    return msg.reply(`Stock symbol \`${symbol}\` not found.`);
+  }
+
+  if (isNaN(change) || !eventMsg) {
+    return msg.reply("Invalid format. Wrap the event message in quotes.");
+  }
+
+  customEvents.push({ symbol, change, message: eventMsg });
+  msg.reply(`✅ Event added! You now have ${customEvents.length} custom event(s).`);
+}
+
+// Trigger an event by index
+else if (msg.content.startsWith("!doevent ")) {
+  if (msg.author.id !== adminID) return;
+
+  const index = parseInt(msg.content.split(" ")[1]);
+  const event = customEvents[index];
+
+  if (!event) {
+    return msg.reply(`⚠️ No event found at index ${index}`);
+  }
+
+  const symbol = event.symbol;
+  const change = event.change;
+  const msgText = event.message;
+
+  stocks[symbol] = Math.max(1, stocks[symbol] + stocks[symbol] * change);
+
+  const report = Object.entries(stocks)
+    .map(([sym, price]) => `${sym}: $${price.toFixed(2)}`)
+    .join('\n');
+
+  msg.channel.send(`🧨 **Manual Event Triggered**: ${msgText}\n\`\`\`${report}\`\`\``);
+}
 // Start bot
 client.on("ready", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
