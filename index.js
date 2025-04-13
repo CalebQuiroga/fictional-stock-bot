@@ -138,4 +138,6 @@ app.listen(process.env.PORT || 8080, () => {
   console.log("🌐 Dummy web server is active to keep Azure alive.");
 });
 
-client.login(process.env.TOKEN);
+client.login(process.env.TOKEN).catch((err) => {
+  console.error("❌ Discord login failed:", err);
+});
