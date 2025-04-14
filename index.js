@@ -3,6 +3,8 @@ const { Client, GatewayIntentBits, Partials } = require("discord.js");
 const express = require("express");
 require("dotenv").config();
 
+const PORT = process.env.PORT || 8080;
+
 // Discord client setup
 const client = new Client({
   intents: [
@@ -17,7 +19,7 @@ const client = new Client({
 const app = express();
 const PORT = process.env.PORT;
 app.get("/", (_, res) => res.send("Bot is running."));
-app.listen(process.env.PORT, () => console.log(`🌐 Web server listening on port ${process.env.PORT}`));
+app.listen(PORT, () => console.log(`🌐 Web server active on port ${PORT}`));
 
 // Constants and configuration
 const adminID = "907341400830537838";
