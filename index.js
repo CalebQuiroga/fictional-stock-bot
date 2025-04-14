@@ -1,18 +1,26 @@
+// Required modules
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 const express = require("express");
 require("dotenv").config();
 
+// Discord client setup
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ],
   partials: [Partials.Channel],
 });
 
+// Express server for Azure ping
 const app = express();
+const PORT = process.env.PORT;
 app.get("/", (_, res) => res.send("Bot is running."));
-app.listen(process.env.PORT || 8080, () => console.log("\ud83c\udf10 Web server active"));
+app.listen(PORT, () => console.log(`🌐 Web server active on port ${PORT}`));
 
+// Constants and configuration
 const adminID = "907341400830537838";
-let customEvents = [];
 const channelID = "1219680183985115136";
 
 let stocks = {
@@ -33,9 +41,9 @@ for (const key in stocks) {
 
 function calculateTrend(symbol) {
   const history = stockHistory[symbol];
-  if (!history || history.length < 2) return "\ud83c\udd95";
+  if (!history || history.length < 2) return "➡️";
   const diff = history[history.length - 1] - history[history.length - 2];
-  return diff > 0 ? "\ud83d\udcc8" : diff < 0 ? "\ud83d\udcc9" : "\u27a1\ufe0f";
+  return diff > 0 ? "📈" : diff < 0 ? "📉" : "➡️";
 }
 
 const indexes = {
@@ -77,10 +85,10 @@ function calculateIndexes() {
 }
 
 client.on("ready", async () => {
-  console.log(`\u2705 Logged in as ${client.user.tag}`);
+  console.log(`✅ Logged in as ${client.user.tag}`);
   const channel = await client.channels.fetch(channelID);
 
-  setInterval(() => updateStocks(), 20000);
+  setInterval(updateStocks, 20000);
 
   async function dailyReportLoop() {
     while (true) {
@@ -98,7 +106,7 @@ client.on("ready", async () => {
         .map(([i, v]) => `${i}: ${v}`)
         .join("\n");
 
-      await channel.send(`\ud83d\udcc5 **Daily Market Report for ${day}**\n\
+      await channel.send(`📅 **Daily Market Report for ${day}**\n\
 \\`\\`\\`\n${report}\n\nIndexes:\n${indexReport}\n\\`\\`\\``);
       await wait(minutes * 60 * 1000);
     }
@@ -110,11 +118,11 @@ client.on("ready", async () => {
 client.on("messageCreate", async (msg) => {
   if (msg.content === "!stocks") {
     const lines = Object.entries(stocks).map(([s, p]) => `${s}: $${p.toFixed(2)} ${calculateTrend(s)}`);
-    msg.channel.send("\ud83d\udcc8 **Current Stock Prices**:\n" + lines.join("\n"));
+    msg.channel.send("📈 **Current Stock Prices**:\n" + lines.join("\n"));
   } else if (msg.content === "!index") {
     const values = calculateIndexes();
     const lines = Object.entries(values).map(([i, v]) => `${i}: ${v}`);
-    msg.channel.send("\ud83d\udcca **Current Index Values**:\n" + lines.join("\n"));
+    msg.channel.send("📊 **Current Index Values**:\n" + lines.join("\n"));
   } else if (msg.content.startsWith("!price ")) {
     const symbol = msg.content.split(" ")[1].toUpperCase();
     if (stocks[symbol]) {
@@ -136,16 +144,16 @@ client.on("messageCreate", async (msg) => {
     if (isNaN(change) || !eventMsg) return msg.reply("Invalid format. Wrap the event message in quotes.");
 
     customEvents.push({ symbol, change, message: eventMsg });
-    msg.reply(`\u2705 Event added! (${customEvents.length} total)`);
+    msg.reply(`✅ Event added! (${customEvents.length} total)`);
   } else if (msg.content === "!clearevents") {
     if (msg.author.id !== adminID) return;
     customEvents = [];
-    msg.channel.send("\ud83d\uddd1\ufe0f All custom events have been cleared.");
+    msg.channel.send("🗑️ All custom events have been cleared.");
   } else if (msg.content.startsWith("!doevent ")) {
     if (msg.author.id !== adminID) return;
     const index = parseInt(msg.content.split(" ")[1]);
     const event = customEvents[index];
-    if (!event) return msg.reply(`\u26a0\ufe0f No event found at index ${index}`);
+    if (!event) return msg.reply(`⚠️ No event found at index ${index}`);
 
     const symbol = event.symbol;
     const change = event.change;
@@ -160,7 +168,7 @@ client.on("messageCreate", async (msg) => {
       .map(([s, p]) => `${s}: $${p.toFixed(2)} ${calculateTrend(s)}`)
       .join("\n");
 
-    msg.channel.send(`\ud83e\udca8 **Manual Event Triggered**: ${msgText}\n\
+    msg.channel.send(`🧨 **Manual Event Triggered**: ${msgText}\n\
 \\`\\`\\`\n${report}\n\\`\\`\\``);
   }
 });
