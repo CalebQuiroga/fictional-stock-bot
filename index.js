@@ -17,7 +17,7 @@ const client = new Client({
 const app = express();
 const PORT = process.env.PORT;
 app.get("/", (_, res) => res.send("Bot is running."));
-app.listen(PORT, () => console.log(`🌐 Web server active on port ${PORT}`));
+app.listen(process.env.PORT, () => console.log(`🌐 Web server listening on port ${process.env.PORT}`));
 
 // Constants and configuration
 const adminID = "907341400830537838";
