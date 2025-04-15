@@ -12,7 +12,7 @@ const client = new Client({
 
 const app = express();
 const PORT = 8080; // hardcoded for Azure compatibility
-const TOKEN = "YOUR_DISCORD_BOT_TOKEN"; // <-- Replace this with your actual token
+const TOKEN = "MTM2MDc1NjY5OTk3NTM4NTE5OA.Gp7Y86.2P0l6YL4QBhlMaFqOEzhe5PCZtSODijxn25SY8"; // <-- Replace this with your actual token
 const CHANNEL_ID = "1219680183985115136";
 const ADMIN_ID = "907341400830537838";
 
