@@ -1,5 +1,5 @@
 // fictional-stock-bot/index.js
-require("dotenv").config();
+
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 const express = require("express");
 const fs = require("fs");
@@ -210,4 +210,4 @@ client.on("messageCreate", async (msg) => {
   }
 });
 
-client.login(process.env.TOKEN);
+client.login(process.env.DISCORD_TOKEN);
