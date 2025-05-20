@@ -1,9 +1,9 @@
 // fictional-stock-bot/index.js
-
+require("dotenv").config();
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 const express = require("express");
 const fs = require("fs");
-require("dotenv").config();
+
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
